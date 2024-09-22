@@ -7,15 +7,20 @@ import rdkit.Chem as Chem
 
 ELEM_LIST = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'Al', 'I', 'B', 'K', 'Se', 'Zn', 'H', 'Cu', 'Mn', 'unknown']
 
+#feature dimension of atom
 ATOM_FDIM = len(ELEM_LIST) + 6 + 5 + 1
+#This is the feature dimension of bonds, which is set to 5, indicating 5 possible types of bond features 
 BOND_FDIM = 5 
+#The maximum number of neighbors a given atom can have in the graph representation
 MAX_NB = 15
 
+#print(onek_encoding_unk('C', ELEM_LIST)) => [True, False, False, False, False, False]
 def onek_encoding_unk(x, allowable_set):
     if x not in allowable_set:
         x = allowable_set[-1]
     return map(lambda s: x == s, allowable_set)
 
+#A 1 at the first index for 'C' in the element list. A 1 at the index corresponding to the degree (4 bonds). A 1 at the index for the formal charge (0). A 0 indicating the atom is not aromatic.
 def atom_features(atom):
     return torch.Tensor(onek_encoding_unk(atom.GetSymbol(), ELEM_LIST) 
             + onek_encoding_unk(atom.GetDegree(), [0,1,2,3,4,5]) 
