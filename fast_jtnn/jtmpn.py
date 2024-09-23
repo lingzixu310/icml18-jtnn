@@ -42,6 +42,12 @@ class JTMPN(nn.Module):
         self.W_h = nn.Linear(hidden_size, hidden_size, bias=False)
         self.W_o = nn.Linear(ATOM_FDIM + hidden_size, hidden_size)
 
+    #fatoms: Atom features (a tensor representing each atom’s feature in the molecule).
+    #fbonds: Bond features (a tensor representing each bond’s feature between two atoms).
+    #agraph: Adjacency list for atoms (maps each atom to its neighboring atoms).
+    #bgraph: Adjacency list for bonds (maps each bond to its neighboring bonds).
+    #scope: Defines the range of atoms in each molecule (since the data may contain multiple molecules as a batch, this helps to separate them).
+    #tree_message: Initial message from the molecular tree (used in the junction tree VAE setting for message passing between molecular substructures).
     def forward(self, fatoms, fbonds, agraph, bgraph, scope, tree_message): #tree_message[0] == vec(0)
         fatoms = create_var(fatoms)
         fbonds = create_var(fbonds)
@@ -50,7 +56,7 @@ class JTMPN(nn.Module):
 
         binput = self.W_i(fbonds)
         graph_message = F.relu(binput)
-
+     #graph encoder with depth given
         for i in xrange(self.depth - 1):
             message = torch.cat([tree_message,graph_message], dim=0) 
             nei_message = index_select_ND(message, 0, bgraph)
